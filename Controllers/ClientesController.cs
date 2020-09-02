@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Microsoft.EntityFrameworkCore;
+using Reto.Data;
+using Reto.Models;
 
 namespace Reto.Controllers
 {
@@ -12,37 +14,97 @@ namespace Reto.Controllers
     [ApiController]
     public class ClientesController : ControllerBase
     {
+        private readonly PrestamoContexto _context;
 
-        // GET: api/<ClientesController>
+        public ClientesController(PrestamoContexto context)
+        {
+            _context = context;
+        }
+
+        // GET: api/Clientes
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes()
         {
-            return new string[] { "value1", "value2" };
+            return await _context.Clientes.ToListAsync();
         }
 
-        // GET api/<ClientesController>/5
+        // GET: api/Clientes/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ActionResult<Cliente>> GetCliente(int id)
         {
-            return "value";
+            var cliente = await _context.Clientes.FindAsync(id);
+
+            if (cliente == null)
+            {
+                return NotFound();
+            }
+
+            return cliente;
         }
 
-        // POST api/<ClientesController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<ClientesController>/5
+        // PUT: api/Clientes/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
+        // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> PutCliente(int id, Cliente cliente)
         {
+            if (id != cliente.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(cliente).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ClienteExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
-        // DELETE api/<ClientesController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        // POST: api/Clientes
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
+        // more details see https://aka.ms/RazorPagesCRUD.
+        [HttpPost]
+        public async Task<ActionResult<Cliente>> PostCliente(Cliente cliente)
         {
+            _context.Clientes.Add(cliente);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetCliente", new { id = cliente.Id }, cliente);
+        }
+
+        // DELETE: api/Clientes/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Cliente>> DeleteCliente(int id)
+        {
+            var cliente = await _context.Clientes.FindAsync(id);
+            if (cliente == null)
+            {
+                return NotFound();
+            }
+
+            _context.Clientes.Remove(cliente);
+            await _context.SaveChangesAsync();
+
+            return cliente;
+        }
+
+        private bool ClienteExists(int id)
+        {
+            return _context.Clientes.Any(e => e.Id == id);
         }
     }
 }

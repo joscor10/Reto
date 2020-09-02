@@ -21,5 +21,6 @@ namespace Reto.Data
         public DbSet<Solicitud> Solicitudes { get; set; }
 
 
+
     }
 }

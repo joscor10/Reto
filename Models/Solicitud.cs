@@ -11,6 +11,7 @@ namespace Reto.Models
         public decimal Monto { get; set; }
         public string Estado { get; set; }
         public string Tipo { get; set; }
+      
         public int ClienteId { get; set; }
     }
 }
